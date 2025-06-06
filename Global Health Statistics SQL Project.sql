@@ -2,13 +2,13 @@ create table global_health_statistics as (
 	select * from global_health_statistics_2018
 	union all
 	select * from global_health_statistics_2019
-    union all
+        union all
 	select * from global_health_statistics_2020
 	union all
 	select * from global_health_statistics_2021
 	union all
 	select * from global_health_statistics_2022
-    union all
+        union all
 	select * from global_health_statistics_2023
 	union all
 	select * from global_health_statistics_2024
