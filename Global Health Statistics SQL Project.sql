@@ -2,13 +2,13 @@ create table global_health_statistics as (
 	select * from global_health_statistics_2018
 	union all
 	select * from global_health_statistics_2019
-    union all
+        union all
 	select * from global_health_statistics_2020
 	union all
 	select * from global_health_statistics_2021
 	union all
 	select * from global_health_statistics_2022
-    union all
+        union all
 	select * from global_health_statistics_2023
 	union all
 	select * from global_health_statistics_2024
@@ -42,22 +42,22 @@ after agegroup;
 
 update global_health_statistics
 set Age_Group = case
-					when AgeGroup = "0-18" then "Children"
+		    when AgeGroup = "0-18" then "Children"
                     when AgeGroup = "19-35" then "Adult"
                     when AgeGroup = "36-60" then "Middle-age"
                     else "Old-age"
-				end;
+	        end;
             
 
 select DiseaseName, Age_Group as Most_affected_age_group, sum(PopulationAffected) as total_affected_people
 from global_health_statistics g
 group by DiseaseName, Age_Group
 having sum(PopulationAffected) = (select max(total_affected_people)
-								 from (select DiseaseName, Age_Group, sum(PopulationAffected) 
-									   as total_affected_people
-									   from global_health_statistics
-									   group by DiseaseName, Age_Group) sub
-							     where g.DiseaseName = sub.DiseaseName);
+				  from (select DiseaseName, Age_Group, sum(PopulationAffected) 
+				        as total_affected_people
+					from global_health_statistics
+					group by DiseaseName, Age_Group) sub
+				  where g.DiseaseName = sub.DiseaseName);
 
 -- Question 4. Identify Most common disease in each demographic group. --
 
@@ -69,14 +69,14 @@ update global_health_statistics
 set Demographic_group = concat(Age_Group,"-",Gender);
 
 with affected_demographic_group as (
-	select Demographic_group, DiseaseName, sum(PopulationAffected) as total_affected_people
-	from global_health_statistics
-	group by Demographic_group, DiseaseName
+     select Demographic_group, DiseaseName, sum(PopulationAffected) as total_affected_people
+     from global_health_statistics
+     group by Demographic_group, DiseaseName
 )
 select Demographic_group, DiseaseName as Most_common_disease
 from affected_demographic_group a1
 where total_affected_people = (select max(total_affected_people)
-			                   from affected_demographic_group a2
+			       from affected_demographic_group a2
                                where a1.Demographic_group = a2.Demographic_group)
 order by Demographic_group;
 
@@ -101,11 +101,11 @@ limit 5;
 Also find the country with the highest positive change in new cases in case of each disease. */
 
 with new_cases as (
-	select Year, DiseaseName, round(sum(PopulationAffected * IncidenceRate/100),0) as number_of_new_cases,
-	round(lag(sum(PopulationAffected * IncidenceRate/100)) over (partition by DiseaseName order by Year),0) as 
-	Previous_year_number_of_new_cases
-	from global_health_statistics
-	group by Year, DiseaseName
+     select Year, DiseaseName, round(sum(PopulationAffected * IncidenceRate/100),0) as number_of_new_cases,
+     round(lag(sum(PopulationAffected * IncidenceRate/100)) over (partition by DiseaseName order by Year),0) as 
+     Previous_year_number_of_new_cases
+     from global_health_statistics
+     group by Year, DiseaseName
 )
 select Year, DiseaseName, number_of_new_cases, Previous_year_number_of_new_cases,
 round(((number_of_new_cases - Previous_year_number_of_new_cases)/Previous_year_number_of_new_cases)*100,2)
@@ -115,35 +115,35 @@ where Previous_year_number_of_new_cases is not null;
 
 
 with new_cases as (
-	select Year, DiseaseName, ï»¿Country, round(sum(PopulationAffected * IncidenceRate/100),0) as 
-	number_of_new_cases,
-	round(lag(sum(PopulationAffected * IncidenceRate/100)) over 
-	(partition by DiseaseName, ï»¿Country order by Year),0) as Previous_year_number_of_new_cases
-	from global_health_statistics
-	group by Year, DiseaseName, ï»¿Country
+     select Year, DiseaseName, ï»¿Country, round(sum(PopulationAffected * IncidenceRate/100),0) as 
+     number_of_new_cases,
+     round(lag(sum(PopulationAffected * IncidenceRate/100)) over 
+     (partition by DiseaseName, ï»¿Country order by Year),0) as Previous_year_number_of_new_cases
+     from global_health_statistics
+     group by Year, DiseaseName, ï»¿Country
 ),
 Percentage_change as (
-	select Year, DiseaseName, ï»¿Country, number_of_new_cases, Previous_year_number_of_new_cases,
-	round(((number_of_new_cases - Previous_year_number_of_new_cases)/Previous_year_number_of_new_cases)*100,2)
-	as Percentage_change_in_new_cases
-	from new_cases
-	where Previous_year_number_of_new_cases is not null
+     select Year, DiseaseName, ï»¿Country, number_of_new_cases, Previous_year_number_of_new_cases,
+     round(((number_of_new_cases - Previous_year_number_of_new_cases)/Previous_year_number_of_new_cases)*100,2)
+     as Percentage_change_in_new_cases
+     from new_cases
+     where Previous_year_number_of_new_cases is not null
 )
 select DiseaseName, Year as Year_with_max_new_cases, ï»¿Country as Country_with_max_new_cases,
 Percentage_change_in_new_cases
 from Percentage_change p1
 where Percentage_change_in_new_cases = (select max(Percentage_change_in_new_cases)
-										from Percentage_change p2
-										where p1.DiseaseName = p2.DiseaseName);
+					from Percentage_change p2
+					where p1.DiseaseName = p2.DiseaseName);
 
 /* Question 7. Find disease categories with the highest percentage of recovered people 
 in case of each disease. */
 
 with recovered_people as(
-	select DiseaseName, DiseaseCategory, round((sum(PopulationAffected * RecoveryRate/100)/
-	sum(PopulationAffected))*100,2) as Percentage_of_recovered_people
-	from global_health_statistics
-	group by DiseaseName, DiseaseCategory
+     select DiseaseName, DiseaseCategory, round((sum(PopulationAffected * RecoveryRate/100)/
+     sum(PopulationAffected))*100,2) as Percentage_of_recovered_people
+     from global_health_statistics
+     group by DiseaseName, DiseaseCategory
 )
 select distinct DiseaseName,
 first_value(DiseaseCategory) over (partition by DiseaseName order by Percentage_of_recovered_people desc) as
@@ -160,7 +160,7 @@ having round(sum(PopulationAffected * RecoveryRate/100),0) =
 						(select max(number_of_recovered_people)
 						 from (select DiseaseName, ï»¿Country, 
 						       round(sum(PopulationAffected * RecoveryRate/100),0) 
-                               as number_of_recovered_people
+                                                       as number_of_recovered_people
 						       from global_health_statistics
 						       group by DiseaseName, ï»¿Country) sub
 						 where g.DiseaseName = sub.DiseaseName);
@@ -177,7 +177,7 @@ limit 1;
 in case of each disease. */ 
 
 with yearly_deaths as (
-	select Year, DiseaseName, round(sum(PopulationAffected * MortalityRate/100),0) as number_of_deaths,
+    select Year, DiseaseName, round(sum(PopulationAffected * MortalityRate/100),0) as number_of_deaths,
     round(lag(sum(PopulationAffected * MortalityRate/100)) over (partition by DiseaseName order by year),0) 
     as Previous_year_number_of_deaths
     from global_health_statistics
@@ -192,14 +192,14 @@ where Previous_year_number_of_deaths is not null;
 -- Question 11. Find the disease category that caused the highest number of deaths in case of each disease. --
 
 with deaths_in_diseasecategory as (
-	select DiseaseName, DiseaseCategory, round(sum(PopulationAffected * MortalityRate/100),0) as number_of_deaths
-	from global_health_statistics
-	group by DiseaseName, DiseaseCategory
+     select DiseaseName, DiseaseCategory, round(sum(PopulationAffected * MortalityRate/100),0) as number_of_deaths
+     from global_health_statistics
+     group by DiseaseName, DiseaseCategory
 )
 select DiseaseName, DiseaseCategory, number_of_deaths
 from deaths_in_diseasecategory d1
 where number_of_deaths = (select max( number_of_deaths)
-						  from deaths_in_diseasecategory d2
+			  from deaths_in_diseasecategory d2
                           where d1.DiseaseName = d2.DiseaseName);
 
 
@@ -218,7 +218,7 @@ Delimiter //
 create procedure Disease_caused_highest_deaths (in Year1 int)
 	select DiseaseName
 	from global_health_statistics
-    where year = Year1
+        where year = Year1
 	group by year, DiseaseName
 	order by sum(PopulationAffected*MortalityRate/100) desc
 	limit 1;
@@ -240,9 +240,9 @@ limit 5;
 premature death and years of life lived with a disability) in case of each disease. */
 
 with Disease_Burden as (
-	select DiseaseName, ï»¿Country, avg(DALYs) as Burden_of_Disease
-	from global_health_statistics
-	group by DiseaseName, ï»¿Country
+     select DiseaseName, ï»¿Country, avg(DALYs) as Burden_of_Disease
+     from global_health_statistics
+     group by DiseaseName, ï»¿Country
 )
 select distinct DiseaseName,
 first_value(ï»¿Country) over (partition by DiseaseName order by Burden_of_Disease desc)
@@ -252,9 +252,9 @@ from Disease_Burden;
 -- Question 15. In case of each disease which treatment type is most effective? -- 
 
 with treatment_type as (                           
-	select DiseaseName, TreatmentType, round(sum(PopulationAffected * RecoveryRate/100),0) as recovered_people
-	from global_health_statistics
-	group by DiseaseName, TreatmentType
+     select DiseaseName, TreatmentType, round(sum(PopulationAffected * RecoveryRate/100),0) as recovered_people
+     from global_health_statistics
+     group by DiseaseName, TreatmentType
 )
 select distinct DiseaseName, last_value(TreatmentType) over (partition by DiseaseName order by recovered_people
 rows between unbounded preceding and unbounded following) as Most_beneficial_treatment_type
@@ -263,30 +263,30 @@ from treatment_type;
 -- Question 16. Find the countries with the highest treatment cost for each treatment type of each disease. --
 
 with treatment_cost as (
-	select DiseaseName, TreatmentType, ï»¿Country, avg(AverageTreatmentCost) as avg_treatment_cost
-	from global_health_statistics
-	group by DiseaseName, TreatmentType, ï»¿Country
+     select DiseaseName, TreatmentType, ï»¿Country, avg(AverageTreatmentCost) as avg_treatment_cost
+     from global_health_statistics
+     group by DiseaseName, TreatmentType, ï»¿Country
 )
 select DiseaseName, TreatmentType, ï»¿Country as Country_with_highest_treatment_cost
 from treatment_cost tc1
 where avg_treatment_cost = (select max(avg_treatment_cost)
-							from treatment_cost tc2
-							where tc1.DiseaseName = tc2.DiseaseName
+			    from treatment_cost tc2
+			    where tc1.DiseaseName = tc2.DiseaseName
                             and tc1.TreatmentType = tc2.TreatmentType)
 order by DiseaseName, TreatmentType;
 				
 --  Find the countries with the lowest treatment cost for each treatment type of each disease. --
 
 with treatment_cost as (
-	select DiseaseName, TreatmentType, ï»¿Country, avg(AverageTreatmentCost) as avg_treatment_cost
-	from global_health_statistics
-	group by ï»¿Country, DiseaseName, TreatmentType
+     select DiseaseName, TreatmentType, ï»¿Country, avg(AverageTreatmentCost) as avg_treatment_cost
+     from global_health_statistics
+     group by ï»¿Country, DiseaseName, TreatmentType
 )
 select DiseaseName, TreatmentType, ï»¿Country as Country_with_lowest_treatment_cost
 from treatment_cost tc1
 where avg_treatment_cost = (select min(avg_treatment_cost)
-							from treatment_cost tc2
-							where tc1.DiseaseName = tc2.DiseaseName
+			    from treatment_cost tc2
+			    where tc1.DiseaseName = tc2.DiseaseName
                             and tc1.TreatmentType = tc2.TreatmentType)
 order by DiseaseName, TreatmentType;
 
@@ -301,17 +301,17 @@ limit 3;
 -- Question 18. Find the countries where demand of vaccines or treatment is high in case of each disease. --
 
 with vaccines_or_treatment_availability as (
-	select DiseaseName, ï»¿Country, Availability_of_Vaccines_or_Treatment, sum(PopulationAffected) 
-	as number_of_affected_people
-	from global_health_statistics
-	group by DiseaseName, ï»¿Country, Availability_of_Vaccines_or_Treatment
+     select DiseaseName, ï»¿Country, Availability_of_Vaccines_or_Treatment, sum(PopulationAffected) 
+     as number_of_affected_people
+     from global_health_statistics
+     group by DiseaseName, ï»¿Country, Availability_of_Vaccines_or_Treatment
 )
 select DiseaseName, ï»¿Country as Country_with_high_demand_of_vaccines_or_treatment
 from vaccines_or_treatment_availability vt1
 where Availability_of_Vaccines_or_Treatment = "No"
 and number_of_affected_people = (select max(number_of_affected_people)
-								 from vaccines_or_treatment_availability vt2
-								 where vt1.DiseaseName = vt2.DiseaseName);
+				 from vaccines_or_treatment_availability vt2
+				 where vt1.DiseaseName = vt2.DiseaseName);
 
 -- Question 19. Which countries have maximum and minimum average number of doctors in case of each disease? --
 
@@ -320,9 +320,9 @@ rows between unbounded preceding and unbounded following) as Country_with_max_nu
 first_value(ï»¿Country) over (partition by DiseaseName order by number_of_doctors)
 as Country_with_min_number_of_doctors_per_1000
 from (
-	  select DiseaseName, ï»¿Country, avg(Doctors_per_1000) as number_of_doctors
-	  from global_health_statistics
-	  group by DiseaseName, ï»¿Country) sub;                                
+      select DiseaseName, ï»¿Country, avg(Doctors_per_1000) as number_of_doctors
+      from global_health_statistics
+      group by DiseaseName, ï»¿Country) sub;                                
 
 -- Question 20. Which countries have maximum and minimum average number of hospital beds in case of each disease? --
                                  
@@ -331,7 +331,7 @@ rows between unbounded preceding and unbounded following) as Country_with_max_nu
 first_value(ï»¿Country) over (partition by DiseaseName order by number_of_hospital_beds)
 as Country_with_min_number_of_beds_per_1000
 from (
-	  select DiseaseName, ï»¿Country, avg(Hospital_Beds_per_1000) as number_of_hospital_beds
-	  from global_health_statistics
-	  group by DiseaseName, ï»¿Country) sub;
+      select DiseaseName, ï»¿Country, avg(Hospital_Beds_per_1000) as number_of_hospital_beds
+      from global_health_statistics
+      group by DiseaseName, ï»¿Country) sub;
 
