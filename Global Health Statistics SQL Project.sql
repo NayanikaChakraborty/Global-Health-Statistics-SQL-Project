@@ -42,7 +42,7 @@ after agegroup;
 
 update global_health_statistics
 set Age_Group = case
-					when AgeGroup = "0-18" then "Children"
+		    when AgeGroup = "0-18" then "Children"
                     when AgeGroup = "19-35" then "Adult"
                     when AgeGroup = "36-60" then "Middle-age"
                     else "Old-age"
@@ -53,11 +53,11 @@ select DiseaseName, Age_Group as Most_affected_age_group, sum(PopulationAffected
 from global_health_statistics g
 group by DiseaseName, Age_Group
 having sum(PopulationAffected) = (select max(total_affected_people)
-								 from (select DiseaseName, Age_Group, sum(PopulationAffected) 
-									   as total_affected_people
-									   from global_health_statistics
-									   group by DiseaseName, Age_Group) sub
-							     where g.DiseaseName = sub.DiseaseName);
+				  from (select DiseaseName, Age_Group, sum(PopulationAffected) 
+					as total_affected_people
+					from global_health_statistics
+					group by DiseaseName, Age_Group) sub
+				  where g.DiseaseName = sub.DiseaseName);
 
 -- Question 4. Identify Most common disease in each demographic group. --
 
@@ -76,8 +76,8 @@ group by Demographic_group, DiseaseName
 select Demographic_group, DiseaseName
 from affected_demographic_group a1
 where total_affected_people = (select max(total_affected_people)
-			from affected_demographic_group a2
-            where a1.Demographic_group = a2.Demographic_group)
+			       from affected_demographic_group a2
+                               where a1.Demographic_group = a2.Demographic_group)
 order by Demographic_group;
 
 -- Question 5. Find the top 5 countries with the highest and the lowest number of affected people? --
@@ -133,8 +133,8 @@ select DiseaseName, Year as Year_with_max_new_cases, ï»¿Country as Country_wi
 Percentage_change_in_new_cases
 from Percentage_change p1
 where Percentage_change_in_new_cases = (select max(Percentage_change_in_new_cases)
-										from Percentage_change p2
-										where p1.DiseaseName = p2.DiseaseName);
+					from Percentage_change p2
+					where p1.DiseaseName = p2.DiseaseName);
 
 /* Question 7. Find disease categories with the highest percentage of recovered people 
 in case of each disease. */
@@ -160,7 +160,7 @@ having round(sum(PopulationAffected * RecoveryRate/100),0) =
 						(select max(number_of_recovered_people)
 						from (select DiseaseName, ï»¿Country, 
 						      round(sum(PopulationAffected * RecoveryRate/100),0) 
-                              as number_of_recovered_people
+                                                      as number_of_recovered_people
 						      from global_health_statistics
 						      group by DiseaseName, ï»¿Country) sub
 						where g.DiseaseName = sub.DiseaseName);
@@ -177,11 +177,11 @@ limit 1;
 in case of each disease. */ 
 
 with yearly_deaths as (
-	select Year, DiseaseName, round(sum(PopulationAffected * MortalityRate/100),0) as number_of_deaths,
-    round(lag(sum(PopulationAffected * MortalityRate/100)) over (partition by DiseaseName order by year),0) 
-    as Previous_year_number_of_deaths
-    from global_health_statistics
-    group by Year, DiseaseName
+select Year, DiseaseName, round(sum(PopulationAffected * MortalityRate/100),0) as number_of_deaths,
+round(lag(sum(PopulationAffected * MortalityRate/100)) over (partition by DiseaseName order by year),0) 
+as Previous_year_number_of_deaths
+from global_health_statistics
+group by Year, DiseaseName
 )
 select Year, DiseaseName, number_of_deaths, Previous_year_number_of_deaths,
 round(((number_of_deaths - Previous_year_number_of_deaths)/Previous_year_number_of_deaths)*100,2) 
@@ -199,7 +199,7 @@ group by DiseaseName, DiseaseCategory
 select DiseaseName, DiseaseCategory, number_of_deaths
 from deaths_in_diseasecategory d1
 where number_of_deaths = (select max( number_of_deaths)
-						  from deaths_in_diseasecategory d2
+			  from deaths_in_diseasecategory d2
                           where d1.DiseaseName = d2.DiseaseName);
 
 
@@ -218,7 +218,7 @@ Delimiter //
 create procedure Disease_caused_highest_deaths (in Year1 int)
 	select DiseaseName
 	from global_health_statistics
-    where year = Year1
+        where year = Year1
 	group by year, DiseaseName
 	order by sum(PopulationAffected*MortalityRate/100) desc
 	limit 1;
@@ -270,8 +270,8 @@ group by DiseaseName, TreatmentType, ï»¿Country
 select DiseaseName, TreatmentType, ï»¿Country as Country_with_highest_treatment_cost
 from treatment_cost tc1
 where avg_treatment_cost = (select max(avg_treatment_cost)
-							from treatment_cost tc2
-							where tc1.DiseaseName = tc2.DiseaseName
+			    from treatment_cost tc2
+			    where tc1.DiseaseName = tc2.DiseaseName
                             and tc1.TreatmentType = tc2.TreatmentType)
 order by DiseaseName;
 				
@@ -285,8 +285,8 @@ group by ï»¿Country, DiseaseName, TreatmentType
 select DiseaseName, TreatmentType, ï»¿Country as Country_with_lowest_treatment_cost
 from treatment_cost tc1
 where avg_treatment_cost = (select min(avg_treatment_cost)
-							from treatment_cost tc2
-							where tc1.DiseaseName = tc2.DiseaseName
+			    from treatment_cost tc2
+			    where tc1.DiseaseName = tc2.DiseaseName
                             and tc1.TreatmentType = tc2.TreatmentType)
 order by DiseaseName;
 
@@ -310,8 +310,8 @@ select DiseaseName, ï»¿Country as Country_with_high_demand_of_vaccines_or_tre
 from vaccines_or_treatment_availability vt1
 where Availability_of_Vaccines_or_Treatment = "No"
 and number_of_affected_people = (select max(number_of_affected_people)
-								 from vaccines_or_treatment_availability vt2
-								 where vt1.DiseaseName = vt2.DiseaseName);
+				 from vaccines_or_treatment_availability vt2
+				 where vt1.DiseaseName = vt2.DiseaseName);
 
 -- Question 19. Which countries have maximum and minimum average number of doctors in case of each disease? --
 
@@ -331,7 +331,7 @@ rows between unbounded preceding and unbounded following) as Country_with_max_nu
 first_value(ï»¿Country) over (partition by DiseaseName order by number_of_hospital_beds)
 as Country_with_min_number_of_beds_per_1000
 from (
-select DiseaseName, ï»¿Country, avg(Hospital_Beds_per_1000) as number_of_hospital_beds
-from global_health_statistics
-group by DiseaseName, ï»¿Country) sub;
+      select DiseaseName, ï»¿Country, avg(Hospital_Beds_per_1000) as number_of_hospital_beds
+      from global_health_statistics
+      group by DiseaseName, ï»¿Country) sub;
 
