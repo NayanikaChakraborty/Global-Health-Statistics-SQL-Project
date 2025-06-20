@@ -18,7 +18,7 @@ select *
 from global_health_statistics;
 
 
--- Question 1. which top 3 diseases have affected the highest number of people? --
+-- Question 1. which top 3 diseases have affected the highest number of people?
 
 select DiseaseName, sum(PopulationAffected) as total_affected_people
 from global_health_statistics
@@ -26,7 +26,7 @@ group by DiseaseName
 order by total_affected_people desc
 limit 3;
 
--- Question 2. In which year the total number of affected people is highest? --
+-- Question 2. In which year the total number of affected people is highest?
 
 select Year, sum(PopulationAffected) as total_affected_people
 from global_health_statistics
@@ -34,7 +34,7 @@ group by Year
 order by total_affected_people desc
 limit 1;
 
--- Question 3. Find the most affected age group in case of each disease. --
+-- Question 3. Find the most affected age group in case of each disease.
 
 alter table global_health_statistics
 add column Age_Group varchar(50)
@@ -59,7 +59,7 @@ having sum(PopulationAffected) = (select max(total_affected_people)
 					group by DiseaseName, Age_Group) sub
 				  where g.DiseaseName = sub.DiseaseName);
 
--- Question 4. Identify Most common disease in each demographic group. --
+-- Question 4. Identify Most common disease in each demographic group.
 
 alter table global_health_statistics
 add column Demographic_group varchar(50)
@@ -80,7 +80,7 @@ where total_affected_people = (select max(total_affected_people)
                                where a1.Demographic_group = a2.Demographic_group)
 order by Demographic_group;
 
--- Question 5. Find the top 5 countries with the highest and the lowest number of affected people? --
+-- Question 5. Find the top 5 countries with the highest and the lowest number of affected people?
 
 select ï»¿Country as country_with_the_highest_number_of_affected_people, sum(PopulationAffected) as
 total_affected_people
@@ -150,7 +150,7 @@ first_value(DiseaseCategory) over (partition by DiseaseName order by Percentage_
 Disease_Category_with_max_recovered_people
 from recovered_people;
 
--- Question 8. Find the countries with the highest number of recovered people in case of each disease. --
+-- Question 8. Find the countries with the highest number of recovered people in case of each disease.
 
 select DiseaseName, ï»¿Country as Country_with_highest_recovered_people, 
 round(sum(PopulationAffected * RecoveryRate/100),0) as number_of_recovered_people
@@ -165,7 +165,7 @@ having round(sum(PopulationAffected * RecoveryRate/100),0) =
 						       group by DiseaseName, ï»¿Country) sub
 						 where g.DiseaseName = sub.DiseaseName);
 
--- Question 9. Which disease caused the highest number of deaths? --
+-- Question 9. Which disease caused the highest number of deaths?
 
 select DiseaseName, round(sum(PopulationAffected * MortalityRate/100),0) as number_of_deaths
 from global_health_statistics
@@ -189,7 +189,7 @@ as Percentage_change
 from yearly_deaths
 where Previous_year_number_of_deaths is not null;
 
--- Question 11. Find the disease category that caused the highest number of deaths in case of each disease. --
+-- Question 11. Find the disease category that caused the highest number of deaths in case of each disease.
 
 with deaths_in_diseasecategory as (
      select DiseaseName, DiseaseCategory, round(sum(PopulationAffected * MortalityRate/100),0) as number_of_deaths
@@ -203,7 +203,7 @@ where number_of_deaths = (select max( number_of_deaths)
                           where d1.DiseaseName = d2.DiseaseName);
 
 
--- Question 12. Find the most harmful disease category.--
+-- Question 12. Find the most harmful disease category.
 
 select  DiseaseCategory, round(sum(PopulationAffected * MortalityRate/100),0) as number_of_deaths
 from global_health_statistics
@@ -249,7 +249,7 @@ first_value(ï»¿Country) over (partition by DiseaseName order by Burden_of_Dis
 as Country_with_highest_Burden_of_Disease
 from Disease_Burden;
 
--- Question 15. In case of each disease which treatment type is most effective? -- 
+-- Question 15. In case of each disease which treatment type is most effective?
 
 with treatment_type as (                           
      select DiseaseName, TreatmentType, round(sum(PopulationAffected * RecoveryRate/100),0) as recovered_people
@@ -260,7 +260,7 @@ select distinct DiseaseName, last_value(TreatmentType) over (partition by Diseas
 rows between unbounded preceding and unbounded following) as Most_beneficial_treatment_type
 from treatment_type;
                         
--- Question 16. Find the countries with the highest treatment cost for each treatment type of each disease. --
+-- Question 16. Find the countries with the highest treatment cost for each treatment type of each disease.
 
 with treatment_cost as (
      select DiseaseName, TreatmentType, ï»¿Country, avg(AverageTreatmentCost) as avg_treatment_cost
@@ -275,7 +275,7 @@ where avg_treatment_cost = (select max(avg_treatment_cost)
                             and tc1.TreatmentType = tc2.TreatmentType)
 order by DiseaseName, TreatmentType;
 				
---  Find the countries with the lowest treatment cost for each treatment type of each disease. --
+--  Find the countries with the lowest treatment cost for each treatment type of each disease.
 
 with treatment_cost as (
      select DiseaseName, TreatmentType, ï»¿Country, avg(AverageTreatmentCost) as avg_treatment_cost
@@ -290,7 +290,7 @@ where avg_treatment_cost = (select min(avg_treatment_cost)
                             and tc1.TreatmentType = tc2.TreatmentType)
 order by DiseaseName, TreatmentType;
 
--- Question 17. Find the three countries with the lowest number of affected people having healthcare access. --
+-- Question 17. Find the three countries with the lowest number of affected people having healthcare access.
 
 select ï»¿Country as Country_with_min_healthcare_access
 from global_health_statistics
@@ -298,7 +298,7 @@ group by ï»¿Country
 order by round(sum(PopulationAffected * HealthcareAccess/100),0)
 limit 3;
 
--- Question 18. Find the countries where demand of vaccines or treatment is high in case of each disease. --
+-- Question 18. Find the countries where demand of vaccines or treatment is high in case of each disease.
 
 with vaccines_or_treatment_availability as (
      select DiseaseName, ï»¿Country, Availability_of_Vaccines_or_Treatment, sum(PopulationAffected) 
@@ -313,7 +313,7 @@ and number_of_affected_people = (select max(number_of_affected_people)
 				 from vaccines_or_treatment_availability vt2
 				 where vt1.DiseaseName = vt2.DiseaseName);
 
--- Question 19. Which countries have maximum and minimum average number of doctors in case of each disease? --
+-- Question 19. Which countries have maximum and minimum average number of doctors in case of each disease?
 
 select distinct DiseaseName, last_value(ï»¿Country) over (partition by DiseaseName order by number_of_doctors
 rows between unbounded preceding and unbounded following) as Country_with_max_number_of_doctors_per_1000,
@@ -324,7 +324,7 @@ from (
       from global_health_statistics
       group by DiseaseName, ï»¿Country) sub;                                
 
--- Question 20. Which countries have maximum and minimum average number of hospital beds in case of each disease? --
+-- Question 20. Which countries have maximum and minimum average number of hospital beds in case of each disease?
                                  
 select distinct DiseaseName, last_value(ï»¿Country) over (partition by DiseaseName order by number_of_hospital_beds
 rows between unbounded preceding and unbounded following) as Country_with_max_number_of_beds_per_1000,
